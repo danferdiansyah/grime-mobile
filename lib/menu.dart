@@ -57,6 +57,7 @@ class MyHomePage extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18.0,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -87,7 +88,7 @@ class MyHomePage extends StatelessWidget {
 
 
     final List<ItemHomepage> items = [
-         ItemHomepage("Lihat Daftar Produk", Icons.mood),
+         ItemHomepage("Lihat Daftar Produk", Icons.add_shopping_cart),
          ItemHomepage("Tambah Produk", Icons.add),
          ItemHomepage("Logout", Icons.logout),
     ];
