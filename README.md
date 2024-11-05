@@ -127,17 +127,13 @@ Widget-widget tersebut bekerja sama untuk membentuk *interface* aplikasi yang me
 
 ## Apa fungsi dari `setState()`? Jelaskan variabel apa saja yang dapat terdampak dengan fungsi tersebut.
 
-Fungsi `setState()` digunakan dalam stateful widget untuk memberi tahu Flutter bahwa ada perubahan pada state yang perlu direfleksikan pada UI. Ketika `setState()` dipanggil, Flutter akan merender ulang widget sehingga perubahan yang dilakukan dapat ditampilkan.
+Fungsi `setState()` digunakan dalam stateful widget untuk memberi tahu Flutter bahwa ada perubahan pada state yang perlu direfleksikan pada UI. Ketika `setState()` dipanggil, Flutter akan merender ulang widget sehingga perubahan yang dilakukan dapat ditampilkan. Pada project ini, tidak digunakan `setState()`, akan tetapi jika setState() diterapkan, variabel-variabel yang dapat terdampak mencakup data-data yang mungkin mengalami perubahan selama aplikasi berjalan. Beberapa contoh di antaranya adalah:
 
-```dart
-void _incrementCounter() {
-  setState(() {
-    _counter++;
-  });
-}
-```
+`npm`, `name`, dan `className`: Variabel-variabel ini saat ini bersifat final dan statis, tetapi jika  perlu diubah, `setState()` bisa digunakan untuk memperbarui tampilan agar mencerminkan nilai terbaru dari masing-masing variabel. Misalnya, jika data profil pengguna dapat diperbarui, maka perubahan tersebut bisa di-refleksikan dengan memanggil `setState()`.
 
-Pada contoh di atas, variabel `_counter` akan di-update, dan UI yang menggunakan `_counter` akan diperbarui untuk menampilkan nilai terbaru. Semua variabel dalam state yang diubah di dalam `setState()` akan terpengaruh dan menyebabkan widget melakukan rebuild.
+`items`: Daftar item pada halaman utama yang mencakup item seperti "Lihat Daftar Produk", "Tambah Produk", dan "Logout". Jika daftar ini diperluas, dikurangi, atau elemen-elemennya dimodifikasi (misalnya, menambahkan item baru atau mengganti icon), `setState()` bisa dipakai untuk merender ulang tampilan dan menampilkan perubahan pada GridView.
+
+Properti dalam `ItemCard`: Jika setiap kartu item (ItemCard) membutuhkan perubahan dinamis, misalnya warna background atau ikon yang berubah berdasarkan kondisi tertentu, `setState()` dapat digunakan untuk memperbarui tampilan kartu ini. Hal ini akan berguna jika, misalnya, ada perubahan status atau aksi tertentu yang mempengaruhi tampilan masing-masing `ItemCard`.
 
 ---
 
