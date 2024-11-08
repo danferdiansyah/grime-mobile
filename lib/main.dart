@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grime/menu.dart';
+import 'package:grime/screens/menu.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Grime',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF05e500), // New green color

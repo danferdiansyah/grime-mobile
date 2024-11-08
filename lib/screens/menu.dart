@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:grime/widgets/left_drawer.dart'; // Import LeftDrawer here
+import 'package:grime/widgets/product_card.dart';
+import 'package:grime/screens/product_form.dart';
 
 class MyHomePage extends StatelessWidget {
-    final String npm = '2306275052'; // NPM
-    final String name = 'Daniel Ferdiansyah'; // Nama
-    final String className = 'PBP F'; // Kelas
-    MyHomePage({super.key});
+  final String npm = '2306275052'; // NPM
+  final String name = 'Daniel Ferdiansyah'; // Nama
+  final String className = 'PBP F'; // Kelas
+  MyHomePage({super.key});
+
+  final List<ItemHomepage> items = [
+    ItemHomepage("Lihat Daftar Produk", Icons.add_shopping_cart),
+    ItemHomepage("Tambah Produk", Icons.add),
+    ItemHomepage("Logout", Icons.logout),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +27,15 @@ class MyHomePage extends StatelessWidget {
           ),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+      drawer: const LeftDrawer(), // Adding the left drawer here
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Info Cards Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -33,6 +45,8 @@ class MyHomePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16.0),
+
+            // Welcome Message and Item Grid
             Center(
               child: Column(
                 children: [
@@ -43,7 +57,6 @@ class MyHomePage extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18.0,
-                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -66,12 +79,6 @@ class MyHomePage extends StatelessWidget {
       ),
     );
   }
-
-    final List<ItemHomepage> items = [
-         ItemHomepage("Lihat Daftar Produk", Icons.add_shopping_cart),
-         ItemHomepage("Tambah Produk", Icons.add),
-         ItemHomepage("Logout", Icons.logout),
-    ];
 }
 
 class InfoCard extends StatelessWidget {
@@ -103,10 +110,10 @@ class InfoCard extends StatelessWidget {
 }
 
 class ItemHomepage {
-    final String name;
-    final IconData icon;
+  final String name;
+  final IconData icon;
 
-    ItemHomepage(this.name, this.icon);
+  ItemHomepage(this.name, this.icon);
 }
 
 class ItemCard extends StatelessWidget {
@@ -119,7 +126,6 @@ class ItemCard extends StatelessWidget {
     Color backgroundColor;
     Color textColor;
 
-    // Customizing colors based on item name
     if (item.name == "Tambah Produk") {
       backgroundColor = Colors.white;
       textColor = Colors.black;
