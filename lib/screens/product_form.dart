@@ -20,7 +20,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
       appBar: AppBar(
         title: const Center(
           child: Text(
-            'Form Tambah Produk Baru',
+            'Add new product',
           ),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -63,7 +63,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
               child: TextFormField(
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: "Amount",
+                  hintText: "Product Amount",
                   hintStyle: const TextStyle(color: Colors.grey),
                   labelText: "Amount",
                   labelStyle: const TextStyle(color: Colors.white),
@@ -78,10 +78,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 },
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
-                    return "Amount cannot be empty!";
+                    return "Product amount cannot be empty!";
                   }
                   if (int.tryParse(value) == null) {
-                    return "Amount must be a number!";
+                    return "Product amount must be a number!";
                   }
                   return null;
                 },
@@ -107,7 +107,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 },
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
-                    return "Description cannot be empty!";
+                    return "Product description cannot be empty!";
                   }
                   return null;
                 },

@@ -17,7 +17,7 @@ class LeftDrawer extends StatelessWidget {
             child: const Column(
               children: [
                 Text(
-                  'Grime Inventory',
+                  'Grime',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 24,
@@ -27,7 +27,7 @@ class LeftDrawer extends StatelessWidget {
                 ),
                 Padding(padding: EdgeInsets.all(8)),
                 Text(
-                  "Manage your product inventory efficiently!",
+                  "Anything, anytime, anywhere.",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
@@ -51,7 +51,7 @@ class LeftDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.add_box_outlined),
             title: const Text('Add Product'),
-            // Redirection to ProductFormPage
+            // Redirect ke ProductFormPage
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ProductFormPage()));
             },

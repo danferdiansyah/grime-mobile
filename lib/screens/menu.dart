@@ -29,7 +29,7 @@ class MyHomePage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.primary,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      drawer: const LeftDrawer(), // Adding the left drawer here
+      drawer: const LeftDrawer(), // Left drawer
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -46,7 +46,7 @@ class MyHomePage extends StatelessWidget {
             ),
             const SizedBox(height: 16.0),
 
-            // Welcome Message and Item Grid
+            // Welcome Message dan Item Grid
             Center(
               child: Column(
                 children: [
@@ -142,11 +142,20 @@ class ItemCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: () {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(content: Text("Kamu telah menekan tombol ${item.name}!"))
+          if (item.name == "Tambah Produk") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ProductFormPage(),
+              ),
             );
+          } else {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(content: Text("Kamu telah menekan tombol ${item.name}!"))
+              );
+          }
         },
         child: Container(
           padding: const EdgeInsets.all(8),
