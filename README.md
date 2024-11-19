@@ -192,3 +192,212 @@ Aplikasi Flutter memperbarui status pengguna menjadi tidak login. Hal ini dilaku
 Setelah logout, pengguna diarahkan kembali ke halaman login untuk masuk kembali jika diperlukan.
 
 ---
+
+```markdown
+## Langkah-langkah Implementasi Checklist
+
+### **1. Mengimplementasikan Fitur Registrasi Akun**
+#### a. **Membuat View Baru di Django**
+Tambahkan view baru untuk menangani registrasi pengguna di file Django `views.py`:
+```python
+@csrf_exempt
+def register(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data['username']
+        password1 = data['password1']
+        password2 = data['password2']
+```
+
+#### b. **Membuat Stateful Page**
+Buat halaman baru di Flutter dengan stateful widget untuk formulir registrasi.
+
+#### c. **Membuat Form Input**
+Tambahkan input untuk username, password, dan konfirmasi password. Pastikan form ini menangani validasi input pengguna.
+
+#### d. **Membuat Logic Tombol Registrasi**
+Tambahkan tombol registrasi dengan logic pengiriman data ke backend:
+```dart
+final response = await request.postJson(
+  "http://localhost:8000/auth/register/",
+  jsonEncode({
+    "username": username,
+    "password1": password1,
+    "password2": password2,
+  }));
+```
+
+#### e. **Navigasi ke Halaman Login**
+Setelah registrasi berhasil, arahkan pengguna ke halaman login:
+```dart
+Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (context) => const LoginPage()),
+);
+```
+
+---
+
+### **2. Membuat Halaman Login**
+#### a. **Membuat View Baru di Django**
+Tambahkan view login di Django:
+```python
+@csrf_exempt
+def login(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+```
+
+#### b. **Membuat Stateful Page**
+Buat halaman baru untuk login di Flutter dengan stateful widget.
+
+#### c. **Membuat Form Input**
+Tambahkan input untuk username dan password.
+
+#### d. **Membuat Logic Tombol Login**
+Tambahkan tombol login yang mengirimkan data ke Django:
+```dart
+ElevatedButton(
+  onPressed: () async {
+    String username = _usernameController.text;
+    String password = _passwordController.text;
+
+    final response = await request.login(
+      "http://localhost:8000/auth/login/",
+      {'username': username, 'password': password},
+    );
+
+    if (context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MyHomePage()),
+      );
+    }
+  },
+);
+```
+
+---
+
+### **3. Mengintegrasikan Sistem Autentikasi Django dengan Flutter**
+#### a. **Membuat View Login, Logout, dan Register**
+Tambahkan semua endpoint autentikasi di Django.
+
+#### b. **Memanggil Endpoint di Flutter**
+Gunakan `http` atau `CookieRequest` untuk berinteraksi dengan endpoint Django.
+
+#### c. **Memproses Output JSON**
+Konversikan respons JSON dari Django menjadi model Dart yang sesuai.
+
+#### d. **Membuat Model Kustom**
+- Periksa data JSON dari endpoint (`localhost:8000/json`).
+- Gunakan Quicktype untuk membuat model Dart.
+- Simpan model di file `product_entry.dart`.
+
+---
+
+### **4. Menampilkan Daftar Item**
+#### a. **Fetching JSON**
+Buat fungsi untuk mengambil data JSON:
+```dart
+Future<List<ProductEntry>> fetchMood(CookieRequest request) async {
+  final response = await request.get('http://localhost:8000/json/');
+
+  var data = response;
+  List<ProductEntry> listMood = [];
+  for (var d in data) {
+    if (d != null) {
+      listMood.add(ProductEntry.fromJson(d));
+    }
+  }
+  return listMood;
+}
+```
+
+#### b. **Menggunakan FutureBuilder**
+Gunakan `FutureBuilder` untuk menampilkan loader saat data sedang di-fetch:
+```dart
+body: FutureBuilder(
+  future: fetchMood(request),
+  builder: (context, AsyncSnapshot snapshot) {
+    if (snapshot.data == null) {
+      return const Center(child: CircularProgressIndicator());
+    } else {
+      if (!snapshot.hasData) {
+        return const Text('No data available');
+      }
+    }
+  },
+),
+```
+
+---
+
+### **5. Membuat Halaman Detail Item**
+#### a. **Membuat Stateful Page**
+Tambahkan halaman detail untuk menampilkan informasi produk, seperti `uuid`, `name`, `description`, `price`, etc.
+
+#### b. **Menyatakan Atribut**
+Deklarasikan atribut yang diperlukan untuk halaman detail:
+```dart
+final String uuid;
+final int name;
+final String description;
+final String price;
+final String image;
+final int quantity;
+
+ProductDetailPage({
+  required this.uuid,
+  required this.name,
+  required this.description,
+  required this.price,
+  required this.image,
+  required this.quantity,
+});
+```
+
+#### c. **Navigasi ke Halaman Detail**
+Atur navigasi ke halaman detail saat produk di-klik:
+```dart
+child: InkWell(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductDetailPage(
+          uuid: snapshot.data![index].pk.toString(),
+          price: snapshot.data![index].fields.price,
+          description: snapshot.data![index].fields.description,
+          imageUrl: snapshot.data![index].fields.imageUrl,
+        ),
+      ),
+    );
+  },
+),
+```
+
+#### d. **Menampilkan Detail**
+Tampilkan data detail menggunakan atribut yang telah dideklarasikan:
+```dart
+SizedBox(height: 16.0),
+Text(
+  'Price: \$${widget.price}',
+  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+),
+Text(
+  'Description: ${widget.description}',
+  style: TextStyle(fontSize: 16),
+),
+```
+
+---
+
+### **6. Filter Item Berdasarkan User**
+Tambahkan filter di view Django untuk hanya menampilkan produk milik pengguna yang sedang login:
+```python
+data = Product.objects.filter(user=request.user)
+```
+Dengan filter ini, hanya data relevan yang ditampilkan kepada user.
+```
