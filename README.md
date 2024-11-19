@@ -400,4 +400,3 @@ Tambahkan filter di view Django untuk hanya menampilkan produk milik pengguna ya
 data = Product.objects.filter(user=request.user)
 ```
 Dengan filter ini, hanya data relevan yang ditampilkan kepada user.
-```
