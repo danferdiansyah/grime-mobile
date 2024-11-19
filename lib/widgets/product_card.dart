@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:grime/screens/product_form.dart';
 import 'package:grime/screens/list_product.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:grime/screens/login.dart';
 
 class ItemHomepage {
   final String name;
@@ -16,6 +19,7 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
     Color backgroundColor;
     Color textColor;
 
@@ -34,7 +38,7 @@ class ItemCard extends StatelessWidget {
       color: backgroundColor,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap: () {
+        onTap: () async {
           if (item.name == "Tambah Produk") {
             Navigator.push(
               context,
@@ -42,6 +46,30 @@ class ItemCard extends StatelessWidget {
                 builder: (context) => const ProductFormPage(),
               ),
             );
+          } // statement if sebelumnya
+          else if (item.name == "Logout") {
+              final response = await request.logout(
+                  // TODO: Ganti URL dan jangan lupa tambahkan trailing slash (/) di akhir URL!
+                  "http://[APP_URL_KAMU]/auth/logout/");
+              String message = response["message"];
+              if (context.mounted) {
+                  if (response['status']) {
+                      String uname = response["username"];
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("$message Sampai jumpa, $uname."),
+                      ));
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                      );
+                  } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(message),
+                          ),
+                      );
+                  }
+              }
           } else if (item.name == "Lihat Daftar Produk") {
             Navigator.push(
               context,
