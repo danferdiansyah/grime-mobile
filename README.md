@@ -113,7 +113,7 @@ Jika menggunakan package seperti Provider untuk membagikan instance, setiap peru
 ## Mekanisme Pengiriman Data dari Input hingga Ditampilkan di Flutter
 
 ### 1. **Input Data**
-Pengguna mengisi data produk melalui halaman `product_form.dart`. Formulir ini memungkinkan pengguna untuk memasukkan informasi produk, seperti nama, harga, dan deskripsi.
+Pengguna mengisi data produk melalui halaman `product_form.dart`. Form ini memungkinkan pengguna untuk memasukkan informasi produk, seperti nama, harga, dan deskripsi.
 
 ### 2. **Mengirim Request**
 Setelah semua input terisi, pengguna menekan tombol submit. Data yang dimasukkan dikirim ke server Django menggunakan package `http` atau instance `CookieRequest`. Data tersebut dikirim dalam format JSON di bagian body dari request.
@@ -124,7 +124,7 @@ Setelah semua input terisi, pengguna menekan tombol submit. Data yang dimasukkan
 - **Mengembalikan Response**: Django mengembalikan respons ke Flutter dalam format JSON, yang berisi data hasil pemrosesan atau status request (misalnya, berhasil atau gagal).
 
 ### 4. **Menerima Response**
-Aplikasi Flutter menerima respons JSON dari server Django. Respons ini dapat berisi data produk yang baru saja ditambahkan atau pesan konfirmasi keberhasilan.
+Aplikasi Flutter menerima respons JSON dari server Django. Respons ini dapat berisi data produk yang baru saja ditambahkan.
 
 ### 5. **Decode Data**
 Respons JSON yang diterima diubah menjadi objek Dart menggunakan model yang sesuai. Proses ini memastikan data lebih mudah diakses dan digunakan di aplikasi Flutter.
