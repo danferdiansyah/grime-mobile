@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:grime/widgets/left_drawer.dart';
+import 'package:grime/screens/menu.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+import 'dart:convert';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key});
@@ -11,16 +15,20 @@ class ProductFormPage extends StatefulWidget {
 class _ProductFormPageState extends State<ProductFormPage> {
   final _formKey = GlobalKey<FormState>();
   String _name = "";
-  int _amount = 0;
+  int _price = 0;
   String _description = "";
+  int _quantity = 0;
+  String _image = "";
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Center(
           child: Text(
-            'Add new product',
+            'Add New Product',
           ),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -29,139 +37,167 @@ class _ProductFormPageState extends State<ProductFormPage> {
       drawer: const LeftDrawer(),
       body: Form(
         key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextFormField(
-                style: const TextStyle(color: Colors.white), // Input text color
-                decoration: InputDecoration(
-                  hintText: "Product Name",
-                  hintStyle: const TextStyle(color: Colors.grey), // Placeholder color
-                  labelText: "Name",
-                  labelStyle: const TextStyle(color: Colors.white),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                ),
-                onChanged: (String? value) {
-                  setState(() {
-                    _name = value!;
-                  });
-                },
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return "Product name cannot be empty!";
-                  }
-                  return null;
-                },
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTextField(
+                label: "Name",
+                hint: "Product Name",
+                onChanged: (value) => setState(() => _name = value),
+                validator: (value) => value == null || value.isEmpty
+                    ? "Product name cannot be empty!"
+                    : null,
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextFormField(
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: "Product Amount",
-                  hintStyle: const TextStyle(color: Colors.grey),
-                  labelText: "Amount",
-                  labelStyle: const TextStyle(color: Colors.white),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                ),
-                onChanged: (String? value) {
-                  setState(() {
-                    _amount = int.tryParse(value!) ?? 0;
-                  });
-                },
-                validator: (String? value) {
+              _buildNumberField(
+                label: "Price",
+                hint: "Product Price",
+                onChanged: (value) => setState(() => _price = int.tryParse(value) ?? 0),
+                validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Product amount cannot be empty!";
+                    return "Product price cannot be empty!";
                   }
                   if (int.tryParse(value) == null) {
-                    return "Product amount must be a number!";
+                    return "Product price must be a number!";
                   }
                   return null;
                 },
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextFormField(
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: "Product Description",
-                  hintStyle: const TextStyle(color: Colors.grey),
-                  labelText: "Description",
-                  labelStyle: const TextStyle(color: Colors.white),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                ),
-                onChanged: (String? value) {
-                  setState(() {
-                    _description = value!;
-                  });
-                },
-                validator: (String? value) {
+              _buildTextField(
+                label: "Description",
+                hint: "Product Description",
+                onChanged: (value) => setState(() => _description = value),
+                validator: (value) => value == null || value.isEmpty
+                    ? "Product description cannot be empty!"
+                    : null,
+              ),
+              _buildNumberField(
+                label: "Quantity",
+                hint: "Product Quantity",
+                onChanged: (value) => setState(() => _quantity = int.tryParse(value) ?? 0),
+                validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Product description cannot be empty!";
+                    return "Product quantity cannot be empty!";
+                  }
+                  if (int.tryParse(value) == null) {
+                    return "Product quantity must be a number!";
                   }
                   return null;
                 },
               ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
-                        Theme.of(context).colorScheme.primary),
-                  ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Product successfully saved'),
-                            content: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Name: $_name'),
-                                  Text('Amount: $_amount'),
-                                  Text('Description: $_description'),
-                                ],
+              _buildTextField(
+                label: "Image URL",
+                hint: "Image Link",
+                onChanged: (value) => setState(() => _image = value),
+                validator: (value) => value == null || value.isEmpty
+                    ? "Image URL cannot be empty!"
+                    : null,
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          Theme.of(context).colorScheme.primary),
+                    ),
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        // Kirim data ke server Django dan tunggu respons
+                        final response = await request.postJson(
+                          "http://localhost:8000/create-product-flutter/",
+                          jsonEncode(<String, dynamic>{
+                            'name': _name,
+                            'price': _price.toString(),
+                            'description': _description,
+                            'quantity': _quantity.toString(),
+                            'image': _image,
+                          }),
+                        );
+
+                        if (context.mounted) {
+                          if (response['status'] == 'success') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Product baru berhasil disimpan!"),
                               ),
-                            ),
-                            actions: [
-                              TextButton(
-                                child: const Text('OK'),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _formKey.currentState!.reset();
-                                },
+                            );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => MyHomePage()),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Terdapat kesalahan, silakan coba lagi."),
                               ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  },
-                  child: const Text(
-                    "Save",
-                    style: TextStyle(color: Colors.white),
+                            );
+                          }
+                        }
+                      }
+                    },
+                    child: const Text(
+                      "Save",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String hint,
+    required Function(String) onChanged,
+    required String? Function(String?) validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextFormField(
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.grey),
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(5.0),
+          ),
+        ),
+        onChanged: onChanged,
+        validator: validator,
+      ),
+    );
+  }
+
+  Widget _buildNumberField({
+    required String label,
+    required String hint,
+    required Function(String) onChanged,
+    required String? Function(String?) validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextFormField(
+        keyboardType: TextInputType.number,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.grey),
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(5.0),
+          ),
+        ),
+        onChanged: onChanged,
+        validator: validator,
       ),
     );
   }
