@@ -145,3 +145,50 @@ Data yang sudah dikonversi kemudian ditampilkan ke UI Flutter. Misalnya, data pr
 
 ---
 
+## Mekanisme Autentikasi: Login, Register, dan Logout
+
+### 1. **Proses Login**
+#### a. **Input Data**
+Pengguna memasukkan email dan password di halaman login aplikasi Flutter.
+
+#### b. **Mengirim Request**
+Ketika tombol login diklik, data yang dimasukkan akan dikirim ke endpoint login di Django menggunakan `CookieRequest`. Data ini dikirim dalam format JSON.
+
+#### c. **Proses di Backend**
+- Django memeriksa kredensial (email dan password) yang diterima.
+- Jika valid, Django mengembalikan cookie autentikasi yang menandakan sesi pengguna.
+
+#### d. **Menyimpan Status**
+Cookie autentikasi disimpan di `CookieRequest` untuk digunakan pada request berikutnya, seperti mengambil data pribadi atau melakukan transaksi.
+
+#### e. **Tampilan Menu**
+Setelah login berhasil, aplikasi Flutter akan menampilkan menu utama yang disesuaikan dengan status login pengguna. Misalnya, pengguna yang login dapat mengakses halaman dashboard.
+
+### 2. **Proses Register**
+#### a. **Input Data**
+Pengguna mengisi informasi akun, seperti nama, email, dan password, melalui halaman register.
+
+#### b. **Mengirim Request**
+Ketika tombol register diklik, data tersebut dikirim ke endpoint register Django menggunakan `http` atau `CookieRequest`.
+
+#### c. **Proses di Backend**
+- Django menyimpan data pengguna baru ke database setelah memvalidasinya.
+- Django mengembalikan respons sukses atau pesan error jika terjadi masalah (misalnya, email sudah terdaftar).
+
+#### d. **Notifikasi**
+Flutter menampilkan pesan sukses jika proses pendaftaran berhasil atau pesan error jika ada kendala. Setelah itu, pengguna diarahkan ke halaman login untuk masuk dengan akun baru.
+
+### 3. **Proses Logout**
+#### a. **Request Logout**
+Pengguna menekan tombol logout, dan aplikasi Flutter mengirim request ke endpoint logout di Django menggunakan `CookieRequest`.
+
+#### b. **Hapus Cookie**
+Django menghapus session pengguna, sehingga cookie autentikasi menjadi tidak valid.
+
+#### c. **Update Status**
+Aplikasi Flutter memperbarui status pengguna menjadi tidak login. Hal ini dilakukan dengan menghapus data sesi dari instance `CookieRequest`.
+
+#### d. **Navigasi**
+Setelah logout, pengguna diarahkan kembali ke halaman login untuk masuk kembali jika diperlukan.
+
+---
