@@ -107,6 +107,7 @@ Dengan satu instance `CookieRequest`, Anda menghindari duplikasi kode. Semua kom
 
 d. Mempermudah Pemantauan Status di Seluruh Aplikasi
 Jika menggunakan package seperti Provider untuk membagikan instance, setiap perubahan pada CookieRequest (seperti login atau logout) akan secara otomatis memberitahu komponen lain yang memantau perubahan tersebut.
+
 ---
 
 ## Mekanisme Pengiriman Data dari Input hingga Ditampilkan di Flutter
