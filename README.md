@@ -96,16 +96,16 @@ await request.login('http://127.0.0.1:8000/auth/login/', {
 });
 ```
 ### **2. Mengapa Instance CookieRequest Perlu Dibagikan ke Seluruh Komponen?**
-a. Mendukung Sesi yang Konsisten
+- **Mendukung Sesi yang Konsisten**
 Semua komponen di aplikasi membutuhkan akses ke status sesi pengguna untuk menampilkan data yang relevan. Dengan membagikan instance `CookieRequest`, sesi dapat dikelola secara konsisten di seluruh aplikasi tanpa perlu membuat ulang instance di setiap halaman.
 
-b. Mengelola Autentikasi Global
+- **Mengelola Autentikasi Global**
 Saat pengguna login atau logout, status autentikasi disimpan di `CookieRequest`. Membagikan instance memungkinkan komponen lain, seperti dashboard atau profile page, untuk memeriksa status autentikasi dan menyesuaikan UI (misalnya, menampilkan tombol login atau logout).
 
-c. Efisiensi dan Pemeliharaan Kode
+- **Efisiensi dan Pemeliharaan Kode**
 Dengan satu instance `CookieRequest`, Anda menghindari duplikasi kode. Semua komponen yang membutuhkan data dari API backend cukup memanggil metode get atau post dari instance ini.
 
-d. Mempermudah Pemantauan Status di Seluruh Aplikasi
+- **Mempermudah Pemantauan Status di Seluruh Aplikasi**
 Jika menggunakan package seperti Provider untuk membagikan instance, setiap perubahan pada CookieRequest (seperti login atau logout) akan secara otomatis memberitahu komponen lain yang memantau perubahan tersebut.
 
 ---
