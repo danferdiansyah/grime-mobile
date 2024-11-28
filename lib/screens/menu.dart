@@ -289,7 +289,7 @@ Widget build(BuildContext context) {
         IconButton(
           icon: const Icon(Icons.logout),
           onPressed: () async {
-            final response = await request.logout("http://127.0.0.1:8000/logout-flutter/");
+            final response = await request.logout("http://127.0.0.1:8000/auth/logout/");
             String message = response["message"];
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
