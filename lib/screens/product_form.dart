@@ -1,9 +1,7 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:grime/widgets/left_drawer.dart';
-import 'package:grime/screens/menu.dart';
-import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:provider/provider.dart';
-import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key});
@@ -18,125 +16,217 @@ class _ProductFormPageState extends State<ProductFormPage> {
   int _price = 0;
   String _description = "";
   int _quantity = 0;
-  String _image = "";
+  Uint8List? _imageData;
+  XFile? _pickedFile;
+
+  final ImagePicker _picker = ImagePicker();
+
+  // Function to Pick an Image
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final imageData = await pickedFile.readAsBytes();
+      setState(() {
+        _pickedFile = pickedFile;
+        _imageData = imageData;
+      });
+    }
+  }
+
+  // Function to Submit Form
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate() && _pickedFile != null) {
+      var uri = Uri.parse("http://127.0.0.1:8000/create-flutter/");
+      var request = http.MultipartRequest('POST', uri);
+
+      // Add form fields
+      request.fields['name'] = _name;
+      request.fields['price'] = _price.toString();
+      request.fields['description'] = _description;
+      request.fields['quantity'] = _quantity.toString();
+
+      // Convert image to bytes for upload
+      final imageBytes = await _pickedFile!.readAsBytes();
+
+      // Add image file as bytes
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'image',
+          imageBytes,
+          filename: _pickedFile!.name, // Ensure the name is set
+        ),
+      );
+
+      try {
+        var response = await request.send();
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Product successfully saved!")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Failed to save product.")),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+      }
+    } else if (_pickedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select an image!")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final request = context.watch<CookieRequest>();
-
     return Scaffold(
       appBar: AppBar(
         title: const Center(
-          child: Text(
-            'Add New Product',
-          ),
+          child: Text('Add a New Product'),
         ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
       ),
-      drawer: const LeftDrawer(),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField(
-                label: "Name",
-                hint: "Product Name",
-                onChanged: (value) => setState(() => _name = value),
-                validator: (value) => value == null || value.isEmpty
-                    ? "Product name cannot be empty!"
-                    : null,
+              // Name Field
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Product Name",
+                    labelText: "Name",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  onChanged: (String? value) {
+                    setState(() {
+                      _name = value!;
+                    });
+                  },
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "Name cannot be empty!";
+                    }
+                    return null;
+                  },
+                ),
               ),
-              _buildNumberField(
-                label: "Price",
-                hint: "Product Price",
-                onChanged: (value) => setState(() => _price = int.tryParse(value) ?? 0),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Product price cannot be empty!";
-                  }
-                  if (int.tryParse(value) == null) {
-                    return "Product price must be a number!";
-                  }
-                  return null;
-                },
+              // Price Field
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Price",
+                    labelText: "Price",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  onChanged: (String? value) {
+                    setState(() {
+                      _price = int.tryParse(value!) ?? 0;
+                    });
+                  },
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "Price cannot be empty!";
+                    }
+                    if (int.tryParse(value) == null) {
+                      return "Price must be a valid number!";
+                    }
+                    return null;
+                  },
+                ),
               ),
-              _buildTextField(
-                label: "Description",
-                hint: "Product Description",
-                onChanged: (value) => setState(() => _description = value),
-                validator: (value) => value == null || value.isEmpty
-                    ? "Product description cannot be empty!"
-                    : null,
+              // Description Field
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Description",
+                    labelText: "Description",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  maxLines: 3,
+                  onChanged: (String? value) {
+                    setState(() {
+                      _description = value!;
+                    });
+                  },
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "Description cannot be empty!";
+                    }
+                    return null;
+                  },
+                ),
               ),
-              _buildNumberField(
-                label: "Quantity",
-                hint: "Product Quantity",
-                onChanged: (value) => setState(() => _quantity = int.tryParse(value) ?? 0),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Product quantity cannot be empty!";
-                  }
-                  if (int.tryParse(value) == null) {
-                    return "Product quantity must be a number!";
-                  }
-                  return null;
-                },
+              // Quantity Field
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Quantity",
+                    labelText: "Quantity",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  onChanged: (String? value) {
+                    setState(() {
+                      _quantity = int.tryParse(value!) ?? 0;
+                    });
+                  },
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "Quantity cannot be empty!";
+                    }
+                    if (int.tryParse(value) == null) {
+                      return "Quantity must be a valid number!";
+                    }
+                    if (_quantity <= 0) {
+                      return "Quantity must be greater than 0!";
+                    }
+                    return null;
+                  },
+                ),
               ),
-              _buildTextField(
-                label: "Image URL",
-                hint: "Image Link",
-                onChanged: (value) => setState(() => _image = value),
-                validator: (value) => value == null || value.isEmpty
-                    ? "Image URL cannot be empty!"
-                    : null,
+              // Image Picker Button
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  onPressed: _pickImage,
+                  child: const Text("Select Image"),
+                ),
               ),
+
+              // Display Selected Image
+              if (_imageData != null)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.memory(
+                    _imageData!,
+                    height: 150,
+                  ),
+                ),
+
+              // Submit Button
               Align(
-                alignment: Alignment.center,
+                alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                          Theme.of(context).colorScheme.primary),
-                    ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        // Kirim data ke server Django dan tunggu respons
-                        final response = await request.postJson(
-                          "http://localhost:8000/create-product-flutter/",
-                          jsonEncode(<String, dynamic>{
-                            'name': _name,
-                            'price': _price.toString(),
-                            'description': _description,
-                            'quantity': _quantity.toString(),
-                            'image': _image,
-                          }),
-                        );
-
-                        if (context.mounted) {
-                          if (response['status'] == 'success') {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Product baru berhasil disimpan!"),
-                              ),
-                            );
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => MyHomePage()),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Terdapat kesalahan, silakan coba lagi."),
-                              ),
-                            );
-                          }
-                        }
-                      }
-                    },
+                    onPressed: _submitForm,
                     child: const Text(
                       "Save",
                       style: TextStyle(color: Colors.white),
@@ -147,57 +237,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String label,
-    required String hint,
-    required Function(String) onChanged,
-    required String? Function(String?) validator,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextFormField(
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Colors.grey),
-          labelText: label,
-          labelStyle: const TextStyle(color: Colors.white),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5.0),
-          ),
-        ),
-        onChanged: onChanged,
-        validator: validator,
-      ),
-    );
-  }
-
-  Widget _buildNumberField({
-    required String label,
-    required String hint,
-    required Function(String) onChanged,
-    required String? Function(String?) validator,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextFormField(
-        keyboardType: TextInputType.number,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Colors.grey),
-          labelText: label,
-          labelStyle: const TextStyle(color: Colors.white),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5.0),
-          ),
-        ),
-        onChanged: onChanged,
-        validator: validator,
       ),
     );
   }

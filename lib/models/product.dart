@@ -1,69 +1,51 @@
-// To parse this JSON data, do
-//
-//     final product = productFromJson(jsonString);
-
 import 'dart:convert';
 
-List<Product> productFromJson(String str) => List<Product>.from(json.decode(str).map((x) => Product.fromJson(x)));
-
-String productToJson(List<Product> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
-
 class Product {
-    String model;
-    String pk;
-    Fields fields;
+  final String id;
+  final String name;
+  final int price;
+  final String description;
+  final int quantity;
+  final String? imageUrl; // Nullable since image can be null
 
-    Product({
-        required this.model,
-        required this.pk,
-        required this.fields,
-    });
+  Product({
+    required this.id,
+    required this.name,
+    required this.price,
+    required this.description,
+    required this.quantity,
+    this.imageUrl,
+  });
 
-    factory Product.fromJson(Map<String, dynamic> json) => Product(
-        model: json["model"],
-        pk: json["pk"],
-        fields: Fields.fromJson(json["fields"]),
+  /// Factory constructor to parse JSON
+  factory Product.fromJson(Map<String, dynamic> json) {
+    final fields = json['fields'];
+    const String mediaBaseUrl = 'http://127.0.0.1:8000/media/'; // Base URL for media files
+    return Product(
+      id: json['pk'],
+      name: fields['name'],
+      price: fields['price'],
+      description: fields['description'],
+      quantity: fields['quantity'],
+      imageUrl: fields['image'] != null ? mediaBaseUrl + fields['image'] : null, // Handle nullable image
     );
+  }
 
-    Map<String, dynamic> toJson() => {
-        "model": model,
-        "pk": pk,
-        "fields": fields.toJson(),
-    };
-}
-
-class Fields {
-    int user;
-    String name;
-    int price;
-    String description;
-    int quantity;
-    String image;
-
-    Fields({
-        required this.user,
-        required this.name,
-        required this.price,
-        required this.description,
-        required this.quantity,
-        required this.image,
-    });
-
-    factory Fields.fromJson(Map<String, dynamic> json) => Fields(
-        user: json["user"],
-        name: json["name"],
-        price: json["price"],
-        description: json["description"],
-        quantity: json["quantity"],
-        image: json["image"],
-    );
-
-    Map<String, dynamic> toJson() => {
-        "user": user,
+  /// Convert Product to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      "model": "main.product",
+      "pk": id,
+      "fields": {
         "name": name,
         "price": price,
         "description": description,
         "quantity": quantity,
-        "image": image,
+        "image": imageUrl?.replaceFirst('http://127.0.0.1:8000/media/', ''), // Convert back to relative path
+      },
     };
+  }
+
+  /// Check if price is valid (mimicking Django property)
+  bool get isPriceValid => price > 0;
 }

@@ -38,6 +38,9 @@ dependencies:
   provider: ^6.1.2
   pbp_django_auth: ^0.4.0
   http: ^1.2.2
+  carousel_slider: ^5.0.0
+  dio: ^5.0.0
+  image_picker: ^0.8.7+3
 
 dev_dependencies:
   flutter_test:
@@ -55,7 +58,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  assets:
+      - assets/images/
+      - assets/images/logo.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
