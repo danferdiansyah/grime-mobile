@@ -1,7 +1,9 @@
-import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
+import 'package:grime/widgets/left_drawer.dart';
+import 'package:grime/screens/menu.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key});
@@ -16,79 +18,23 @@ class _ProductFormPageState extends State<ProductFormPage> {
   int _price = 0;
   String _description = "";
   int _quantity = 0;
-  Uint8List? _imageData;
-  XFile? _pickedFile;
-
-  final ImagePicker _picker = ImagePicker();
-
-  // Function to Pick an Image
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      final imageData = await pickedFile.readAsBytes();
-      setState(() {
-        _pickedFile = pickedFile;
-        _imageData = imageData;
-      });
-    }
-  }
-
-  // Function to Submit Form
-  Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate() && _pickedFile != null) {
-      var uri = Uri.parse("http://127.0.0.1:8000/create-flutter/");
-      var request = http.MultipartRequest('POST', uri);
-
-      // Add form fields
-      request.fields['name'] = _name;
-      request.fields['price'] = _price.toString();
-      request.fields['description'] = _description;
-      request.fields['quantity'] = _quantity.toString();
-
-      // Convert image to bytes for upload
-      final imageBytes = await _pickedFile!.readAsBytes();
-
-      // Add image file as bytes
-      request.files.add(
-        http.MultipartFile.fromBytes(
-          'image',
-          imageBytes,
-          filename: _pickedFile!.name, // Ensure the name is set
-        ),
-      );
-
-      try {
-        var response = await request.send();
-        if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Product successfully saved!")),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Failed to save product.")),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
-        );
-      }
-    } else if (_pickedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select an image!")),
-      );
-    }
-  }
+  String? _image; // For now, we'll accept the image as a string (path or URL).
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Center(
-          child: Text('Add a New Product'),
+          child: Text(
+            'Add New Product',
+          ),
         ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
       ),
+      drawer: const LeftDrawer(),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -100,12 +46,15 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
                   decoration: InputDecoration(
-                    hintText: "Product Name",
+                    hintText: "Name",
                     labelText: "Name",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
+                    labelStyle: TextStyle(color: Colors.white), // Label color
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)), // Hint text color
                   ),
+                  style: TextStyle(color: Colors.white), // Input text color
                   onChanged: (String? value) {
                     setState(() {
                       _name = value!;
@@ -113,7 +62,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   },
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return "Name cannot be empty!";
+                      return "Name cannot be empty";
                     }
                     return null;
                   },
@@ -129,7 +78,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
+                    labelStyle: TextStyle(color: Colors.white), // Label color
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)), // Hint text color
                   ),
+                  style: TextStyle(color: Colors.white), // Input text color
+                  keyboardType: TextInputType.number,
                   onChanged: (String? value) {
                     setState(() {
                       _price = int.tryParse(value!) ?? 0;
@@ -137,10 +90,14 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   },
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return "Price cannot be empty!";
+                      return "Please enter a numeric value";
                     }
-                    if (int.tryParse(value) == null) {
-                      return "Price must be a valid number!";
+                    final parsedValue = int.tryParse(value);
+                    if (parsedValue == null) {
+                      return "Please enter a numeric value";
+                    }
+                    if (parsedValue < 0) {
+                      return "Please enter a nonnegative number";
                     }
                     return null;
                   },
@@ -156,8 +113,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
+                    labelStyle: TextStyle(color: Colors.white), // Label color
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)), // Hint text color
                   ),
-                  maxLines: 3,
+                  style: TextStyle(color: Colors.white), // Input text color
                   onChanged: (String? value) {
                     setState(() {
                       _description = value!;
@@ -165,7 +124,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   },
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return "Description cannot be empty!";
+                      return "Description cannot be empty";
                     }
                     return null;
                   },
@@ -181,7 +140,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
+                    labelStyle: TextStyle(color: Colors.white), // Label color
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)), // Hint text color
                   ),
+                  style: TextStyle(color: Colors.white), // Input text color
+                  keyboardType: TextInputType.number,
                   onChanged: (String? value) {
                     setState(() {
                       _quantity = int.tryParse(value!) ?? 0;
@@ -189,44 +152,86 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   },
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return "Quantity cannot be empty!";
+                      return "Please enter a numeric value";
                     }
-                    if (int.tryParse(value) == null) {
-                      return "Quantity must be a valid number!";
+                    final parsedValue = int.tryParse(value);
+                    if (parsedValue == null) {
+                      return "Please enter a numeric value";
                     }
-                    if (_quantity <= 0) {
-                      return "Quantity must be greater than 0!";
+                    if (parsedValue < 0) {
+                      return "Please enter a nonnegative number";
                     }
                     return null;
                   },
                 ),
               ),
-              // Image Picker Button
+              // Image Field
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                  onPressed: _pickImage,
-                  child: const Text("Select Image"),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Image URL (optional)",
+                    labelText: "Image URL",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                    labelStyle: TextStyle(color: Colors.white), // Label color
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)), // Hint text color
+                  ),
+                  style: TextStyle(color: Colors.white), // Input text color
+                  onChanged: (String? value) {
+                    setState(() {
+                      _image = value;
+                    });
+                  },
                 ),
               ),
-
-              // Display Selected Image
-              if (_imageData != null)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Image.memory(
-                    _imageData!,
-                    height: 150,
-                  ),
-                ),
-
-              // Submit Button
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton(
-                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          Theme.of(context).colorScheme.primary,
+                    ),
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        // Send the data to Django backend
+                        final response = await request.postJson(
+                          "http://127.0.0.1:8000/create-flutter/",
+                          jsonEncode(<String, dynamic>{
+                            'name': _name,
+                            'price': _price,
+                            'description': _description,
+                            'quantity': _quantity,
+                            'image': _image,
+                          }),
+                        );
+
+                        if (context.mounted) {
+                          if (response['status'] == 'success') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Product added successfully!"),
+                              ),
+                            );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MyHomePage(),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Failed to add product. Please try again."),
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    },
                     child: const Text(
                       "Save",
                       style: TextStyle(color: Colors.white),
