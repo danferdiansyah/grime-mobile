@@ -18,7 +18,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   int _price = 0;
   String _description = "";
   int _quantity = 0;
-  String? _image; // For now, we'll accept the image as a string (path or URL).
+  String? _image; 
 
   @override
   Widget build(BuildContext context) {

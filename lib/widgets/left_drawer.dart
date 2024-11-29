@@ -39,7 +39,6 @@ class LeftDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.home_outlined),
             title: const Text('Home'),
-            // Redirection to HomePage
             onTap: () {
               Navigator.pushReplacement(
                   context,
@@ -51,7 +50,6 @@ class LeftDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.add_box_outlined),
             title: const Text('Add Product'),
-            // Redirect ke ProductFormPage
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ProductFormPage()));
             },

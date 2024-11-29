@@ -6,8 +6,7 @@ class Product {
   final int price;
   final String description;
   final int quantity;
-  final String? imageUrl; // Nullable since image can be null
-
+  final String? imageUrl; 
   Product({
     required this.id,
     required this.name,
@@ -17,21 +16,20 @@ class Product {
     this.imageUrl,
   });
 
-  /// Factory constructor to parse JSON
+
   factory Product.fromJson(Map<String, dynamic> json) {
     final fields = json['fields'];
-    const String mediaBaseUrl = 'http://127.0.0.1:8000/media/'; // Base URL for media files
+    const String mediaBaseUrl = 'http://127.0.0.1:8000/media/'; 
     return Product(
       id: json['pk'],
       name: fields['name'],
       price: fields['price'],
       description: fields['description'],
       quantity: fields['quantity'],
-      imageUrl: fields['image'] != null ? mediaBaseUrl + fields['image'] : null, // Handle nullable image
+      imageUrl: fields['image'] != null ? mediaBaseUrl + fields['image'] : null, 
     );
   }
 
-  /// Convert Product to JSON
   Map<String, dynamic> toJson() {
     return {
       "model": "main.product",
@@ -41,11 +39,10 @@ class Product {
         "price": price,
         "description": description,
         "quantity": quantity,
-        "image": imageUrl?.replaceFirst('http://127.0.0.1:8000/media/', ''), // Convert back to relative path
+        "image": imageUrl?.replaceFirst('http://127.0.0.1:8000/media/', ''), 
       },
     };
   }
 
-  /// Check if price is valid (mimicking Django property)
   bool get isPriceValid => price > 0;
 }
